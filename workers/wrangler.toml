@@ -1,0 +1,33 @@
+name = "bloomgarden-workers"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "1eda33b5476b457c8fc876a6d18548e9"
+
+# ─── Cron triggers (UTC) ─────────────────────────────────────────────────────
+# 21:00 daily    — The Forecast (market brief, ~30 min after US close)
+# 20:00 Sunday   — Field Notes  (RSS digest; runs before Greenhouse)
+# 22:00 Sunday   — Sunday pipeline: weekly_rollup (from 0003) + The Greenhouse
+#
+# Cloudflare Workers free plan caps at 3 crons. Consolidated accordingly.
+[triggers]
+crons = [
+  "0 21 * * *",
+  "0 20 * * SUN",
+  "0 22 * * SUN",
+]
+
+# ─── Plain vars (non-secret) ─────────────────────────────────────────────────
+[vars]
+SUPABASE_URL = "https://dmgrrthiwbhakoqlemco.supabase.co"
+
+# ─── KV binding (Finnhub cache) ──────────────────────────────────────────────
+[[kv_namespaces]]
+binding = "CACHE"
+id = "4f0e0d13cbd44cec8490474a6d0d8157"
+
+# ─── Secrets (set via `wrangler secret put NAME`) ───────────────────────────
+# - GROQ_API_KEY
+# - FINNHUB_API_KEY
+# - SUPABASE_SERVICE_ROLE_KEY
+# - SUPABASE_URL  (optional if not in [vars] above)

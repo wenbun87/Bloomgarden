@@ -1,0 +1,25 @@
+{
+  "name": "Bloomboard",
+  "short_name": "Bloomboard",
+  "description": "A calm place to grow content.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f0e8d9",
+  "theme_color": "#2d4a3e",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
