@@ -27,14 +27,21 @@ export function useCalendar(
     setLoading(true);
     setError(null);
 
+    // Two filters, ANDed:
+    //  1) membership — the event is owned by, or shares in, one of `ids`
+    //     (so shared events reach participants, not just the creator).
+    //  2) date overlap — a multi-day event that starts before the grid or ends
+    //     after it still shows on its in-range days.
+    const idList = ids.join(",");
     const { data, error: err } = await supabase
       .from("calendar_events")
       .select(
-        "id, user_id, title, event_date, all_day, start_time, end_time, note, source",
+        "id, user_id, title, event_date, end_date, all_day, start_time, end_time, note, source, participant_ids, shared_label",
       )
-      .in("user_id", ids)
-      .gte("event_date", rangeStart)
+      .or(`user_id.in.(${idList}),participant_ids.ov.{${idList}}`)
       .lte("event_date", rangeEnd)
+      .or(`end_date.gte.${rangeStart},and(end_date.is.null,event_date.gte.${rangeStart})`)
+      .order("event_date", { ascending: true })
       .order("start_time", { nullsFirst: true });
 
     if (err) {
