@@ -245,7 +245,7 @@ function SpeciesTile({
   return (
     <li className="flex flex-col gap-1 rounded-card border border-[var(--color-border)] bg-white/70 p-2">
       <div className="flex items-start gap-2">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#e9e4d7]">
           <PixelPlant kind={plantKindFor(species.slug)} size={28} resolution={4} />
         </span>
         <div className="min-w-0 flex-1">

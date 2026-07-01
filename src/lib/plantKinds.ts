@@ -14,7 +14,10 @@ export type PlantKind =
   | "herb"
   | "pine"
   | "rose"
-  | "kale";
+  | "kale"
+  | "moonflower"
+  | "bonsai"
+  | "wisteria";
 
 const SLUG_TO_KIND: Record<string, PlantKind> = {
   // Direct matches
@@ -48,10 +51,15 @@ const SLUG_TO_KIND: Record<string, PlantKind> = {
   hellebore: "tulip",
   evergreen: "pine",
 
-  // Legendary / heirloom
+  // Heirloom
+  "ancient-bonsai": "bonsai",
+  moonflower: "moonflower",
+  "rainbow-rose": "rose",
+  "wisteria-tree": "wisteria",
+
+  // Legendary
   "dragon-fruit": "strawberry",
   "wisteria-arch": "lavender",
-  "rainbow-rose": "rose",
 };
 
 export function plantKindFor(slug: string | undefined | null): PlantKind {

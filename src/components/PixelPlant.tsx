@@ -14,7 +14,10 @@ type PlantKind =
   | "herb"
   | "pine"
   | "rose"
-  | "kale";
+  | "kale"
+  | "moonflower"
+  | "bonsai"
+  | "wisteria";
 
 type Stage = "growing" | "ready";
 
@@ -45,8 +48,17 @@ const palettes: Record<PlantKind, Record<string, string>> = {
   rose:       { P: "#e07a9a", p: "#c85a7e", G: "#6a9a3a" },
   // Ornamental kale: green outer leaves cupping a purple heart.
   kale:       { V: "#8a5fb0", v: "#6a4590", G: "#6a9a3a" },
+  // Moonflower: pale periwinkle bloom — reads on a white tile, unlike a daisy.
+  moonflower: { M: "#c7d1ee", m: "#9fabda", G: "#6a9a3a" },
+  // Ancient bonsai: little canopy over a trunk in a terracotta pot.
+  bonsai:     { G: "#6a9a3a", g: "#4a7028", B: "#6b4a2a", P: "#c07a44" },
+  // Wisteria tree: trunk with a cascading purple canopy.
+  wisteria:   { V: "#9c8ac8", v: "#7660a0", B: "#6b4a2a" },
 };
 
+// All 4×4 sprites are centered within the grid (the shop/seed-bag/farm all
+// render at resolution 4). Trees sit on a 2-wide centred trunk; blooms are
+// symmetric about the vertical centre.
 const grids4: Record<string, string[]> = {
   _growing: [
     "....",
@@ -55,43 +67,43 @@ const grids4: Record<string, string[]> = {
     "....",
   ],
   strawberry: [
-    ".RR.",
-    "RRRr",
+    ".GG.",
+    "RRRR",
     "RYYR",
     ".RR.",
   ],
   sunflower: [
-    "YYY.",
-    "YBY.",
-    "YYY.",
-    "....",
+    ".YY.",
+    "YBBY",
+    "YBBY",
+    ".YY.",
   ],
   tulip: [
-    "..G.",
-    "PPp.",
-    "PPP.",
-    "....",
+    ".PP.",
+    "PPPP",
+    "PPPP",
+    ".GG.",
   ],
   chamomile: [
-    ".W..",
-    "WYW.",
-    ".W..",
-    "....",
+    ".WW.",
+    "WYYW",
+    "WYYW",
+    ".WW.",
   ],
   lavender: [
-    "VVV.",
-    "VvV.",
-    "VVV.",
-    "....",
+    ".VV.",
+    ".VV.",
+    ".GG.",
+    ".GG.",
   ],
   carrot: [
-    "CCc.",
-    "CCc.",
-    ".C..",
-    ".c..",
+    ".GG.",
+    "CCCC",
+    "CCCC",
+    ".CC.",
   ],
   pumpkin: [
-    "..G.",
+    ".GG.",
     "PPPP",
     "PPPP",
     ".PP.",
@@ -99,38 +111,56 @@ const grids4: Record<string, string[]> = {
   cherry: [
     ".GG.",
     "GPPG",
-    ".GG.",
-    "..B.",
+    "GPPG",
+    ".BB.",
   ],
   oak: [
     ".GG.",
     "GGGG",
     "GggG",
-    "..B.",
+    ".BB.",
   ],
   herb: [
+    ".gg.",
+    "gGGg",
     ".GG.",
-    "GGGG",
-    ".GG.",
-    "..B.",
+    ".BB.",
   ],
   pine: [
-    "..G.",
+    ".GG.",
     ".GG.",
     "GGGG",
-    "..B.",
+    ".BB.",
   ],
   rose: [
     ".PP.",
     "PppP",
-    "PPPP",
-    ".G..",
+    "PppP",
+    ".GG.",
   ],
   kale: [
     ".GG.",
     "GVvG",
-    "GVVG",
+    "GVvG",
     ".GG.",
+  ],
+  moonflower: [
+    ".MM.",
+    "MmmM",
+    "MmmM",
+    ".MM.",
+  ],
+  bonsai: [
+    ".GG.",
+    "GGGG",
+    ".BB.",
+    "PPPP",
+  ],
+  wisteria: [
+    "VVVV",
+    "VvvV",
+    ".BB.",
+    ".VV.",
   ],
 };
 
@@ -273,6 +303,36 @@ const grids8: Record<string, string[]> = {
     ".GVvvVG.",
     "..GVVG..",
     "...GG...",
+    "........",
+  ],
+  moonflower: [
+    "..MMMM..",
+    ".MMmmMM.",
+    ".MmmmmM.",
+    ".MmmmmM.",
+    ".MMmmMM.",
+    "..MMMM..",
+    "...GG...",
+    "........",
+  ],
+  bonsai: [
+    "..GGGG..",
+    ".GGGGGG.",
+    "GGGgGGGG",
+    ".GGGGGG.",
+    "...BB...",
+    "...BB...",
+    ".PPPPPP.",
+    "PPPPPPPP",
+  ],
+  wisteria: [
+    ".VVVVVV.",
+    "VVvvvvVV",
+    "VVvvvvVV",
+    "...BB...",
+    "..VBBV..",
+    ".V.BB.V.",
+    "...BB...",
     "........",
   ],
 };

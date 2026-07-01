@@ -60,7 +60,7 @@ export function SeedBag({ seeds }: Props) {
               key={s.speciesId}
               className="relative flex items-center gap-2.5 rounded-card border border-[var(--color-line)] bg-[var(--color-cream)] p-2.5"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#e9e4d7]">
                 <PixelPlant
                   kind={plantKindFor(s.slug)}
                   size={32}
