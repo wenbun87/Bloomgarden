@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Mail, PenSquare } from "lucide-react";
 import { WidgetCard } from "@/components/WidgetCard";
 import { EmptyState } from "@/components/EmptyState";
+import { PixelPlant } from "@/components/PixelPlant";
+import { plantKindFor } from "@/lib/plantKinds";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { formatDistanceToNow } from "date-fns";
@@ -100,9 +102,11 @@ export function MailboxWidget({
               >
                 <div className="flex items-center gap-2 px-2">
                   {m.species && (
-                    <span className="text-lg leading-none">
-                      {m.species.sprite_emoji}
-                    </span>
+                    <PixelPlant
+                      kind={plantKindFor(m.species.slug)}
+                      size={22}
+                      resolution={4}
+                    />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-1 text-sm">

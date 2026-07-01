@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Coins, Send } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { PixelPlant } from "@/components/PixelPlant";
+import { plantKindFor } from "@/lib/plantKinds";
 import { supabase } from "@/lib/supabase";
 import { useFriends } from "@/hooks/useFriends";
 import { useGarden } from "@/hooks/useGarden";
@@ -139,7 +141,7 @@ export function SendMessageDialog({
                     : "border-[var(--color-border)] bg-white/70 hover:border-[var(--color-accent)]",
                 )}
               >
-                <span className="text-lg leading-none">{s.sprite_emoji}</span>
+                <PixelPlant kind={plantKindFor(s.slug)} size={24} resolution={4} />
                 <span className="truncate">{s.name}</span>
                 <span className="flex items-center gap-0.5 text-[9px] text-[var(--color-muted)]">
                   <Coins size={8} />

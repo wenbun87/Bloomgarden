@@ -11,7 +11,7 @@ export type Message = {
   read_at: string | null;
   created_at: string;
   sender: { username: string; display_name: string };
-  species: { name: string; sprite_emoji: string } | null;
+  species: { name: string; slug: string; sprite_emoji: string } | null;
 };
 
 type State = {
@@ -35,7 +35,7 @@ export function useMessages(userId: string | undefined) {
     const { data, error } = await supabase
       .from("messages")
       .select(
-        "id, sender_id, recipient_id, body, seed_id, species_id, read_at, created_at, sender:profile_lookup!sender_id(username, display_name), species:plant_species(name, sprite_emoji)",
+        "id, sender_id, recipient_id, body, seed_id, species_id, read_at, created_at, sender:profile_lookup!sender_id(username, display_name), species:plant_species(name, slug, sprite_emoji)",
       )
       .eq("recipient_id", userId)
       .order("created_at", { ascending: false })

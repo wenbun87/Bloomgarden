@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { Crown, ExternalLink, PenSquare } from "lucide-react";
 import { WidgetCard } from "@/components/WidgetCard";
 import { EmptyState } from "@/components/EmptyState";
+import { PixelPlant } from "@/components/PixelPlant";
+import { plantKindFor } from "@/lib/plantKinds";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/hooks/useSession";
@@ -224,9 +226,11 @@ export default function Profile() {
                           : "border-[var(--color-border)] bg-white/70",
                     )}
                   >
-                    <span className="text-2xl leading-none">
-                      {pl.species.sprite_emoji}
-                    </span>
+                    <PixelPlant
+                      kind={plantKindFor(pl.species.slug)}
+                      size={44}
+                      resolution={4}
+                    />
                     <span className="truncate text-[10px] font-medium">
                       {pl.species.name}
                     </span>
