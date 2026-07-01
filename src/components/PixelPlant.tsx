@@ -17,7 +17,19 @@ type PlantKind =
   | "kale"
   | "moonflower"
   | "bonsai"
-  | "wisteria";
+  | "wisteria"
+  | "jasmine"
+  | "chrysanthemum"
+  | "cosmos"
+  | "hellebore"
+  | "maple"
+  | "berry"
+  | "magnolia"
+  | "bougainvillea"
+  | "rainbow"
+  | "poinsettia"
+  | "dragonfruit"
+  | "wisteriaArch";
 
 type Stage = "growing" | "ready";
 
@@ -54,6 +66,30 @@ const palettes: Record<PlantKind, Record<string, string>> = {
   bonsai:     { G: "#6a9a3a", g: "#4a7028", B: "#6b4a2a", P: "#c07a44" },
   // Wisteria tree: trunk with a cascading purple canopy.
   wisteria:   { V: "#9c8ac8", v: "#7660a0", B: "#6b4a2a" },
+  // Jasmine: pure-white bloom on a green sprig (no yellow eye — that's the daisy).
+  jasmine:      { W: "#ffffff", G: "#6a9a3a", g: "#4a7028" },
+  // Chrysanthemum: layered amber-gold mum.
+  chrysanthemum:{ A: "#e8a838", a: "#b9761a", G: "#6a9a3a" },
+  // Cosmos: airy light-pink petals, soft yellow eye.
+  cosmos:       { C: "#e6b8d8", Y: "#e8d088", G: "#6a9a3a" },
+  // Hellebore: pale green-white winter rose.
+  hellebore:    { W: "#eaf0dc", H: "#bcd299", G: "#6a9a3a" },
+  // Japanese maple: fiery red-orange foliage on a trunk.
+  maple:        { R: "#c8481f", r: "#98330f", B: "#6b4a2a" },
+  // Winter berry: red jewels on a green bush.
+  berry:        { G: "#4a7028", R: "#c83838", r: "#9c2222" },
+  // Magnolia: soft blush-white petals.
+  magnolia:     { M: "#f2dade", m: "#dcaab6", G: "#6a9a3a" },
+  // Bougainvillea: vivid magenta.
+  bougainvillea:{ P: "#c02878", p: "#8c0f4e", G: "#6a9a3a" },
+  // Rainbow rose: multi-colour petals.
+  rainbow:      { R: "#d94f4f", O: "#e0913a", Y: "#e6cf5a", G: "#5aa04a", B: "#4f7fd0", V: "#9c6fc0" },
+  // Poinsettia: red winter bract with a gold centre.
+  poinsettia:   { R: "#c62828", Y: "#e8c848", G: "#4a7028" },
+  // Dragon fruit: magenta fruit with green scales.
+  dragonfruit:  { P: "#d0407a", p: "#a02858", G: "#5aa04a" },
+  // Wisteria arch: a purple trellis arch (vs the lavender sprig / wisteria tree).
+  wisteriaArch: { V: "#9c8ac8", v: "#7660a0", G: "#6a9a3a" },
 };
 
 // All 4×4 sprites are centered within the grid (the shop/seed-bag/farm all
@@ -161,6 +197,78 @@ const grids4: Record<string, string[]> = {
     "VvvV",
     ".BB.",
     ".VV.",
+  ],
+  jasmine: [
+    ".WW.",
+    "WWWW",
+    ".WW.",
+    ".gg.",
+  ],
+  chrysanthemum: [
+    ".AA.",
+    "AaaA",
+    "AaaA",
+    ".AA.",
+  ],
+  cosmos: [
+    ".CC.",
+    "CYYC",
+    ".CC.",
+    ".G..",
+  ],
+  hellebore: [
+    ".WW.",
+    "WHHW",
+    "WHHW",
+    ".GG.",
+  ],
+  maple: [
+    ".RR.",
+    "RRRR",
+    "RrrR",
+    ".BB.",
+  ],
+  berry: [
+    ".GG.",
+    "GRGR",
+    "RGRG",
+    ".GG.",
+  ],
+  magnolia: [
+    ".MM.",
+    "MmmM",
+    "MmmM",
+    ".GG.",
+  ],
+  bougainvillea: [
+    ".PP.",
+    "PppP",
+    "PPPP",
+    ".GG.",
+  ],
+  rainbow: [
+    "ROYG",
+    "OYGB",
+    "YGBV",
+    ".GG.",
+  ],
+  poinsettia: [
+    ".RR.",
+    "RRRR",
+    "RYYR",
+    ".GG.",
+  ],
+  dragonfruit: [
+    ".GG.",
+    "GPPG",
+    "PPPP",
+    ".PP.",
+  ],
+  wisteriaArch: [
+    "VVVV",
+    "V..V",
+    "V..V",
+    "vGGv",
   ],
 };
 

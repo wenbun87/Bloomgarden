@@ -1,5 +1,5 @@
-/* Map DB species slugs to one of 8 PixelPlant kinds based on visual closeness.
-   Used by the farm scene to render plants in plots. */
+/* Map each DB species slug to its own distinct PixelPlant sprite — no two
+   species share a kind. Used by the farm scene, shop, seed bag, profile, etc. */
 
 export type PlantKind =
   | "strawberry"
@@ -17,49 +17,53 @@ export type PlantKind =
   | "kale"
   | "moonflower"
   | "bonsai"
-  | "wisteria";
+  | "wisteria"
+  | "jasmine"
+  | "chrysanthemum"
+  | "cosmos"
+  | "hellebore"
+  | "maple"
+  | "berry"
+  | "magnolia"
+  | "bougainvillea"
+  | "rainbow"
+  | "poinsettia"
+  | "dragonfruit"
+  | "wisteriaArch";
 
 const SLUG_TO_KIND: Record<string, PlantKind> = {
-  // Direct matches
-  tulip: "tulip",
-  sunflower: "sunflower",
-  lavender: "lavender",
-  "cherry-blossom": "cherry",
-
-  // Always-available staples
+  // Common
   daisy: "chamomile",
-  basil: "herb",
-  "young-oak": "oak",
-
-  // Spring
-  magnolia: "rose",
-  peony: "rose",
-
-  // Summer
-  jasmine: "chamomile",
-  bougainvillea: "rose",
-
-  // Autumn
-  cosmos: "tulip",
-  chrysanthemum: "chamomile",
+  jasmine: "jasmine",
+  chrysanthemum: "chrysanthemum",
+  cosmos: "cosmos",
+  magnolia: "magnolia",
   "ornamental-kale": "kale",
-  "japanese-maple": "cherry",
+  poinsettia: "poinsettia",
+  sunflower: "sunflower",
+  tulip: "tulip",
+  "winter-berry": "berry",
+  basil: "herb",
 
-  // Winter
-  poinsettia: "strawberry",
-  "winter-berry": "cherry",
-  hellebore: "tulip",
+  // Rare
+  bougainvillea: "bougainvillea",
+  "cherry-blossom": "cherry",
   evergreen: "pine",
+  hellebore: "hellebore",
+  "japanese-maple": "maple",
+  lavender: "lavender",
+  peony: "rose",
+  "young-oak": "oak",
 
   // Heirloom
   "ancient-bonsai": "bonsai",
   moonflower: "moonflower",
-  "rainbow-rose": "rose",
+  "rainbow-rose": "rainbow",
   "wisteria-tree": "wisteria",
 
   // Legendary
-  "dragon-fruit": "strawberry",
-  "wisteria-arch": "lavender",
+  "dragon-fruit": "dragonfruit",
+  "wisteria-arch": "wisteriaArch",
 };
 
 export function plantKindFor(slug: string | undefined | null): PlantKind {
