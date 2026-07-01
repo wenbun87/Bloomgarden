@@ -4,6 +4,7 @@ import { WidgetCard } from "@/components/WidgetCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { supabase } from "@/lib/supabase";
+import { notifyCoinsChanged } from "@/lib/coinBus";
 import { HABIT_MONTHLY_REWARDS } from "@/lib/coins";
 
 type Kind = "savings" | "investment";
@@ -111,6 +112,7 @@ export function DepositWidget({ userId, kind }: Props) {
       return;
     }
     setAmountInput("");
+    notifyCoinsChanged();
     load();
   }
 

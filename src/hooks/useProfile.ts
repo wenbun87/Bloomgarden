@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { notifyCoinsChanged } from "@/lib/coinBus";
 import type { Profile } from "@/lib/database.types";
 
 type State = {
@@ -31,6 +32,10 @@ export function useProfile(userId: string | undefined) {
       return;
     }
     setState({ profile: data, loading: false, error: null });
+    // A profile reload almost always follows a coin-affecting action, so nudge
+    // the coin pill to resync. Harmless (a single indexed read) on the rare
+    // non-coin reload.
+    notifyCoinsChanged();
   }, [userId]);
 
   useEffect(() => {

@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-import { Lightbulb } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { useHabitsToday } from "@/hooks/useHabitsToday";
 import { useProfile } from "@/hooks/useProfile";
@@ -17,12 +15,17 @@ import {
   type StreakRow,
 } from "@/widgets/habits/StreakGridWidget";
 import { BUILTIN_WEEKLY_QUOTA, countInWeek } from "@/lib/quota";
+import { HeroStrip } from "@/widgets/garden/HeroStrip";
 
 export default function Dashboard() {
   const { session } = useSession();
   const userId = session?.user.id;
-  const { byCategory, reload: reloadHabits } = useHabitsToday(userId);
-  const { reload: reloadProfile } = useProfile(userId);
+  const {
+    byCategory,
+    socialWeekCount,
+    reload: reloadHabits,
+  } = useHabitsToday(userId);
+  const { profile, reload: reloadProfile } = useProfile(userId);
   const streaksState = useStreaks(userId);
   const userHabits = useUserHabits(userId);
   const widgets = useHiddenWidgets(userId);
@@ -38,6 +41,14 @@ export default function Dashboard() {
 
   const s = streaksState.streaks;
   const hidden = userHabits.hidden;
+
+  function greeting(): string {
+    const h = new Date().getHours();
+    if (h < 5) return "evening";
+    if (h < 12) return "morning";
+    if (h < 18) return "afternoon";
+    return "evening";
+  }
 
   const hobbyWeekCount = countInWeek(
     streaksState.qualified.hobby ?? new Set(),
@@ -87,15 +98,16 @@ export default function Dashboard() {
     lightCellClass: string;
     weeklyTarget?: number;
     periodType?: "week" | "month";
+    tappable?: StreakRow["tappable"];
   }[] = [
-    { key: "exercise", label: "Exercise", tint: "text-sky-600", cellClass: "bg-sky-400", lightCellClass: "bg-sky-400/25" },
-    { key: "hobby", label: "Hobby · 3× weekly", tint: "text-violet-600", cellClass: "bg-violet-400", lightCellClass: "bg-violet-400/25", weeklyTarget: 3, periodType: "week" },
-    { key: "mental_health", label: "Mental health · 3× weekly", tint: "text-rose-600", cellClass: "bg-rose-400", lightCellClass: "bg-rose-400/25", weeklyTarget: 3, periodType: "week" },
-    { key: "sleep", label: "Sleep", tint: "text-indigo-600", cellClass: "bg-indigo-400", lightCellClass: "bg-indigo-400/25" },
+    { key: "exercise", label: "Exercise", tint: "text-sky-600", cellClass: "bg-sky-400", lightCellClass: "bg-sky-400/25", tappable: { kind: "builtin", category: "exercise" } },
+    { key: "hobby", label: "Hobby · 3× weekly", tint: "text-violet-600", cellClass: "bg-violet-400", lightCellClass: "bg-violet-400/25", weeklyTarget: 3, periodType: "week", tappable: { kind: "builtin", category: "hobby" } },
+    { key: "mental_health", label: "Mental health · 3× weekly", tint: "text-rose-600", cellClass: "bg-rose-400", lightCellClass: "bg-rose-400/25", weeklyTarget: 3, periodType: "week", tappable: { kind: "builtin", category: "mental_health" } },
+    { key: "sleep", label: "Sleep", tint: "text-indigo-600", cellClass: "bg-indigo-400", lightCellClass: "bg-indigo-400/25", tappable: { kind: "builtin", category: "sleep" } },
     { key: "plants", label: "Plants · weekly", tint: "text-lime-600", cellClass: "bg-lime-400", lightCellClass: "bg-lime-400/25", periodType: "week" },
-    { key: "social", label: "Social · weekly", tint: "text-pink-600", cellClass: "bg-pink-400", lightCellClass: "bg-pink-400/25", periodType: "week" },
-    { key: "savings", label: "Savings · monthly", tint: "text-emerald-700", cellClass: "bg-emerald-500", lightCellClass: "bg-emerald-500/25", periodType: "month" },
-    { key: "investment", label: "Investing · monthly", tint: "text-cyan-700", cellClass: "bg-cyan-500", lightCellClass: "bg-cyan-500/25", periodType: "month" },
+    { key: "social", label: "Social · weekly", tint: "text-pink-600", cellClass: "bg-pink-400", lightCellClass: "bg-pink-400/25", periodType: "week", tappable: { kind: "social" } },
+    { key: "savings", label: "Savings · monthly", tint: "text-emerald-700", cellClass: "bg-emerald-500", lightCellClass: "bg-emerald-500/25", periodType: "month", tappable: { kind: "deposit", depositKind: "savings" } },
+    { key: "investment", label: "Investing · monthly", tint: "text-cyan-700", cellClass: "bg-cyan-500", lightCellClass: "bg-cyan-500/25", periodType: "month", tappable: { kind: "deposit", depositKind: "investment" } },
   ];
 
   const builtinRows: StreakRow[] = builtinSpec
@@ -116,6 +128,7 @@ export default function Dashboard() {
         periodType: r.periodType,
         qualified: logDays,
         qualifiedPeriods: periods,
+        tappable: r.tappable,
       };
     });
 
@@ -160,6 +173,12 @@ export default function Dashboard() {
       periodType,
       qualified: logDays,
       qualifiedPeriods: periods,
+      // Daily custom habits are tappable. Weekly / monthly cells stay
+      // read-only since "log this exact day" doesn't map cleanly there.
+      tappable:
+        h.cadence === "daily"
+          ? { kind: "custom", habitId: h.id }
+          : undefined,
     };
   });
 
@@ -168,24 +187,20 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          A calm place to grow your life
+        <h1 className="page-title">
+          Good {greeting()},{" "}
+          <span style={{ color: "var(--color-grass-deep)" }}>
+            {profile?.display_name?.split(" ")[0] ?? "friend"}
+          </span>
+          .
         </h1>
-        <p className="text-sm text-[var(--color-muted)]">
-          Bloomgarden is your cozy life companion helping you track your
-          habits and tasks. Earn coins from tracking to grow your garden.
-          Venture into the Kitchen and Orchard for health and wealth tools
-          and tips.
+        <p className="page-sub">
+          A calm place to grow your life. Tap a card to log a habit, earn
+          coins, and grow your garden with friends.
         </p>
       </div>
 
-      <Link
-        to="/settings"
-        className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)]"
-      >
-        <Lightbulb size={12} />
-        Edit and add custom habits in Settings
-      </Link>
+      <HeroStrip />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {!hidden.has("exercise") && (
@@ -233,6 +248,7 @@ export default function Dashboard() {
         {!hidden.has("social") && (
           <SocialWidget
             existing={byCategory.social}
+            weekCount={socialWeekCount}
             streak={s.social}
             onChanged={reloadAll}
           />
@@ -254,7 +270,7 @@ export default function Dashboard() {
       </section>
 
       {!widgets.hidden.has("dashboard:streaks") && (
-        <StreakGridWidget rows={streakRows} />
+        <StreakGridWidget rows={streakRows} onChanged={reloadAll} />
       )}
     </div>
   );

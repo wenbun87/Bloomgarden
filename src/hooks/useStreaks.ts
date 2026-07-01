@@ -100,17 +100,27 @@ export function useStreaks(userId: string | undefined) {
     const p: DateMap = {};
 
     // ── Daily cats + social from habit_logs ─────────────────────────────
+    // Quota cats (hobby, mental_health) and social award 0 per-log coins —
+    // they pay via a weekly bonus or are existence-only — so we can't gate
+    // them by coins_awarded. Only exercise/sleep use coins>0 as the qualify
+    // signal.
+    const PAY_PER_LOG = new Set(["exercise", "sleep"]);
     for (const row of (logsRes.data ?? []) as {
       category: string;
       date: string;
       coins_awarded: number;
     }[]) {
-      if (row.coins_awarded <= 0 && row.category !== "social") continue;
+      if (PAY_PER_LOG.has(row.category) && row.coins_awarded <= 0) continue;
       if (!q[row.category]) q[row.category] = new Set();
       q[row.category].add(row.date);
     }
-    // Social is stored as the week's Monday — its log day IS its period start.
-    if (q.social) p.social = new Set(q.social);
+    // Social: a week qualifies (light fill) if any social row exists in it.
+    // Each row's date may now be any day, so collapse to week-starts.
+    if (q.social) {
+      const weeks = new Set<string>();
+      for (const d of q.social) weeks.add(weekStartOf(d));
+      p.social = weeks;
+    }
 
     // ── Plants: days = each plant log date; periods = weeks with 30+ unique
     const plantDays = new Set<string>();

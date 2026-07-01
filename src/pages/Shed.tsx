@@ -17,10 +17,10 @@ export default function Shed({ userId }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Shed</h1>
-        <p className="text-sm text-[var(--color-muted)]">
-          Tools, plans, and scraps — your to-do list and a notepad for
-          anything on your mind.
+        <h1 className="page-title">Shed</h1>
+        <p className="page-sub">
+          Tools, plans, and scraps — your to-do list and a notepad for anything
+          on your mind.
         </p>
       </div>
 

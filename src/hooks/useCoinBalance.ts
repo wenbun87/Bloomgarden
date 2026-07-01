@@ -1,24 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { onCoinsChanged } from "@/lib/coinBus";
 
-// Realtime-backed coin balance. Subscribes to profiles updates for this user so
-// the chrome pill reflects awards as soon as log_habit / weekly_rollup fire.
+// The always-visible coin pill. Kept in sync three ways, most to least
+// reliable: the in-app coin bus (fired the instant a coin action lands), a
+// refetch when the tab regains focus, and a realtime subscription as a
+// cross-device backstop. The bus is why the pill now updates immediately
+// instead of only after a page refresh.
 export function useCoinBalance(userId: string | undefined) {
   const [balance, setBalance] = useState<number | null>(null);
 
-  useEffect(() => {
+  const refetch = useCallback(async () => {
     if (!userId) return;
-    let cancelled = false;
-
-    supabase
+    const { data } = await supabase
       .from("profiles")
       .select("coin_balance")
       .eq("id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled && data)
-          setBalance((data as { coin_balance: number }).coin_balance);
-      });
+      .maybeSingle();
+    if (data) setBalance((data as { coin_balance: number }).coin_balance);
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    refetch();
+    const offBus = onCoinsChanged(refetch);
+    window.addEventListener("focus", refetch);
 
     const channel = supabase
       .channel(`profile:${userId}`)
@@ -38,10 +45,11 @@ export function useCoinBalance(userId: string | undefined) {
       .subscribe();
 
     return () => {
-      cancelled = true;
+      offBus();
+      window.removeEventListener("focus", refetch);
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, refetch]);
 
   return balance;
 }

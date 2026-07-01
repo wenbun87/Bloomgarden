@@ -9,8 +9,8 @@ export default function Briefs() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Briefs</h1>
-        <p className="text-sm text-[var(--color-muted)]">
+        <h1 className="page-title">Briefs</h1>
+        <p className="page-sub">
           Daily market weather, weekly research from the field, and a shared
           AI-run portfolio that everyone watches.
         </p>

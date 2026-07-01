@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NotebookPen, Pencil, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { NotebookPen, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { WidgetCard } from "@/components/WidgetCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/Button";
@@ -19,6 +19,17 @@ type Props = {
 export function NotepadWidget({ userId, notes, onChanged, className }: Props) {
   const [editing, setEditing] = useState<Note | "new" | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+
+  const filteredNotes = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return notes;
+    return notes.filter((n) => {
+      if (n.title.toLowerCase().includes(q)) return true;
+      if (n.body && n.body.toLowerCase().includes(q)) return true;
+      return false;
+    });
+  }, [notes, query]);
 
   return (
     <WidgetCard
@@ -46,6 +57,31 @@ export function NotepadWidget({ userId, notes, onChanged, className }: Props) {
         />
       )}
 
+      {notes.length > 0 && (
+        <div className="relative mb-2">
+          <Search
+            size={12}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-muted)]"
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search notes…"
+            className="h-8 w-full rounded-pill border border-[var(--color-border)] bg-white/80 pl-8 pr-8 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+      )}
+
       {notes.length === 0 && !editing ? (
         <EmptyState
           title="Nothing written down yet"
@@ -57,9 +93,13 @@ export function NotepadWidget({ userId, notes, onChanged, className }: Props) {
             </Button>
           }
         />
+      ) : filteredNotes.length === 0 ? (
+        <p className="py-4 text-center text-xs text-[var(--color-muted)]">
+          No notes match "{query}".
+        </p>
       ) : (
         <ul className="divide-y divide-[var(--color-border)]">
-          {notes.map((n) => {
+          {filteredNotes.map((n) => {
             const isEditing =
               editing !== null && editing !== "new" && editing.id === n.id;
             const expanded = expandedId === n.id;

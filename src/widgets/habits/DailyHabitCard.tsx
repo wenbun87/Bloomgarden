@@ -8,17 +8,19 @@ import type { HabitLog } from "@/hooks/useHabitsToday";
 import { DAILY_MINUTE_THRESHOLD, HABIT_DAILY_REWARD } from "@/lib/coins";
 
 // One-tap daily card shared by Exercise, Hobby, and Mental Health. Sleep uses
-// its own widget. If `weeklyTarget` is set, the card becomes a quota card:
-// tapping still logs today, but the card shows "X/N this week" and marks the
-// week "done" at N. Coins still earn per log (capped once per day).
+// its own widget. If `weeklyTarget` is set, the card is a quota habit:
+//  - Each tap logs (one log per day, idempotent).
+//  - No coins awarded per log; instead a single `quotaBonus` is awarded once
+//    per week when the count first hits the target.
+//  - Counter can show 4/3, 5/3, 6/3 — taps past target keep counting.
 type Props = {
   category: "exercise" | "hobby" | "mental_health";
   title: string;
   hint: string;
   existing: HabitLog | undefined;
   streak: number;
-  weeklyCount?: number;       // days this week the habit's been done (0-7)
-  weeklyTarget?: number;      // X in "X per week"; omit for daily
+  weeklyCount?: number;
+  weeklyTarget?: number;
   onChanged: () => void;
 };
 
@@ -35,9 +37,11 @@ export function DailyHabitCard({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loggedToday = (existing?.coins_awarded ?? 0) > 0;
-  const weekDone =
-    weeklyTarget != null && (weeklyCount ?? 0) >= weeklyTarget;
+  const loggedToday = !!existing;
+  const isQuota = weeklyTarget != null;
+  const count = weeklyCount ?? 0;
+  const weekDone = isQuota && count >= (weeklyTarget ?? 0);
+  const quotaBonus = isQuota ? HABIT_DAILY_REWARD * (weeklyTarget ?? 0) : 0;
 
   async function submit() {
     setBusy(true);
@@ -54,9 +58,7 @@ export function DailyHabitCard({
     onChanged();
   }
 
-  const subtitle = weeklyTarget
-    ? `${weeklyTarget}× weekly`
-    : "Daily";
+  const subtitle = isQuota ? `${weeklyTarget}× weekly` : "Daily";
 
   return (
     <WidgetCard
@@ -70,12 +72,17 @@ export function DailyHabitCard({
             <span className="flex h-7 w-7 items-center justify-center rounded-pill bg-green-100 text-green-700">
               <Check size={14} />
             </span>
-            <span>Done today · +{existing?.coins_awarded}</span>
+            <span>
+              {isQuota
+                ? `Logged today · ${count}/${weeklyTarget} this week`
+                : `Done today · +${existing.coins_awarded}`}
+            </span>
           </div>
-          {weeklyTarget != null && (
+          {isQuota && (
             <WeeklyProgress
-              count={weeklyCount ?? 0}
-              target={weeklyTarget}
+              count={count}
+              target={weeklyTarget!}
+              bonus={quotaBonus}
               done={weekDone}
             />
           )}
@@ -85,10 +92,11 @@ export function DailyHabitCard({
           <p className="min-h-[2.5rem] text-xs text-[var(--color-muted)]">
             {hint}
           </p>
-          {weeklyTarget != null && (
+          {isQuota && (
             <WeeklyProgress
-              count={weeklyCount ?? 0}
-              target={weeklyTarget}
+              count={count}
+              target={weeklyTarget!}
+              bonus={quotaBonus}
               done={weekDone}
             />
           )}
@@ -100,7 +108,10 @@ export function DailyHabitCard({
             {busy ? "Logging…" : "Did it"}
           </Button>
           <p className="flex items-center gap-1 text-xs text-[var(--color-muted)]">
-            <Coins size={12} />+{HABIT_DAILY_REWARD}
+            <Coins size={12} />
+            {isQuota
+              ? `+${quotaBonus} when you hit your weekly target`
+              : `+${HABIT_DAILY_REWARD}`}
           </p>
         </div>
       )}
@@ -112,10 +123,12 @@ export function DailyHabitCard({
 function WeeklyProgress({
   count,
   target,
+  bonus,
   done,
 }: {
   count: number;
   target: number;
+  bonus: number;
   done: boolean;
 }) {
   return (
@@ -125,8 +138,8 @@ function WeeklyProgress({
         <span
           className={`tabular-nums ${done ? "text-green-700" : "text-[var(--color-muted)]"}`}
         >
-          {Math.min(count, target)}/{target}
-          {done && " · done"}
+          {count}/{target}
+          {done && ` · +${bonus} earned`}
         </span>
       </div>
       <div className="flex gap-0.5">

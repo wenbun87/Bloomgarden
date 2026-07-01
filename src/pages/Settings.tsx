@@ -248,8 +248,8 @@ export default function Settings({ userId }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-[var(--color-muted)]">
+        <h1 className="page-title">Settings</h1>
+        <p className="page-sub">
           How you show up to friends.
         </p>
       </div>

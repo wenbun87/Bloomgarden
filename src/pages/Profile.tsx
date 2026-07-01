@@ -147,10 +147,10 @@ export default function Profile() {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="page-title">
             {p.display_name}
           </h1>
-          <p className="text-sm text-[var(--color-muted)]">@{p.username}</p>
+          <p className="page-sub">@{p.username}</p>
         </div>
         {!isSelf && (
           <Button size="sm" variant="soft" onClick={() => setSending(true)}>

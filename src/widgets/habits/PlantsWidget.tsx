@@ -4,6 +4,7 @@ import { WidgetCard } from "@/components/WidgetCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { supabase } from "@/lib/supabase";
+import { notifyCoinsChanged } from "@/lib/coinBus";
 import { weekStartUtc } from "@/lib/dates";
 import { HABIT_WEEKLY_REWARDS, PLANTS_WEEKLY_GOAL } from "@/lib/coins";
 
@@ -73,6 +74,7 @@ export function PlantsWidget({ userId }: Props) {
       return;
     }
     setName("");
+    notifyCoinsChanged();
     load();
   }
 

@@ -1,6 +1,10 @@
-import { useState } from "react";
-import { Check, Flame, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, Flame, Trash2, X } from "lucide-react";
 import { WidgetCard } from "@/components/WidgetCard";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Dialog } from "@/components/ui/Dialog";
+import { supabase } from "@/lib/supabase";
 import { todayUtc } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
@@ -8,15 +12,23 @@ export type StreakRow = {
   key: string;
   label: string;
   tint: string;
-  cellClass: string;              // dark fill: actual log day
-  lightCellClass?: string;        // light wash: qualifying period, non-log day
-  periodType?: "week" | "month";  // how to expand the light wash from `qualifiedPeriods`
-  qualifiedPeriods?: Set<string>; // period starts where the target/condition was met
-  qualified: Set<string>;         // actual log days (dark cells)
+  cellClass: string;
+  lightCellClass?: string;
+  periodType?: "week" | "month";
+  qualifiedPeriods?: Set<string>;
+  qualified: Set<string>;
+  // Tappable rows expose their habit kind so the popup knows what RPC to call.
+  // Omit (undefined) for fully read-only rows.
+  tappable?:
+    | { kind: "builtin"; category: "exercise" | "hobby" | "mental_health" | "sleep" }
+    | { kind: "custom"; habitId: string }
+    | { kind: "social" }
+    | { kind: "deposit"; depositKind: "savings" | "investment" };
 };
 
 type Props = {
   rows: StreakRow[];
+  onChanged?: () => void;
   className?: string;
 };
 
@@ -59,9 +71,13 @@ function currentStreak(set: Set<string>, today: string): number {
   return count;
 }
 
-export function StreakGridWidget({ rows, className }: Props) {
-  const [view, setView] = useState<View>("year");
+export function StreakGridWidget({ rows, onChanged, className }: Props) {
+  const [view, setView] = useState<View>("week");
   const today = todayUtc();
+  const [editing, setEditing] = useState<{
+    row: StreakRow;
+    date: string;
+  } | null>(null);
 
   return (
     <WidgetCard
@@ -88,15 +104,41 @@ export function StreakGridWidget({ rows, className }: Props) {
       }
     >
       {view === "week" ? (
-        <WeekGrid rows={rows} today={today} />
+        <WeekGrid
+          rows={rows}
+          today={today}
+          onCellClick={(row, date) => {
+            if (row.tappable) setEditing({ row, date });
+          }}
+        />
       ) : (
         <YearGrid rows={rows} today={today} />
+      )}
+
+      {editing && (
+        <EditDayDialog
+          row={editing.row}
+          date={editing.date}
+          onClose={() => setEditing(null)}
+          onChanged={() => {
+            setEditing(null);
+            onChanged?.();
+          }}
+        />
       )}
     </WidgetCard>
   );
 }
 
-function WeekGrid({ rows, today }: { rows: StreakRow[]; today: string }) {
+function WeekGrid({
+  rows,
+  today,
+  onCellClick,
+}: {
+  rows: StreakRow[];
+  today: string;
+  onCellClick: (row: StreakRow, date: string) => void;
+}) {
   const days = Array.from({ length: WEEK_DAYS }, (_, i) =>
     addDaysUtc(today, -(WEEK_DAYS - 1 - i)),
   );
@@ -115,6 +157,10 @@ function WeekGrid({ rows, today }: { rows: StreakRow[]; today: string }) {
 
   return (
     <div className="overflow-x-auto">
+      <p className="mb-2 text-[10px] text-[var(--color-muted)]">
+        Tap any day to backtrack. Daily habits log a day; social toggles the
+        week; savings & investing open the day's deposits.
+      </p>
       <table className="w-full border-separate border-spacing-y-1 text-sm">
         <thead>
           <tr>
@@ -159,6 +205,7 @@ function WeekGrid({ rows, today }: { rows: StreakRow[]; today: string }) {
                 {days.map((d, idx) => {
                   const hit = row.qualified.has(d);
                   const isLast = idx === days.length - 1;
+                  const tappable = !!row.tappable;
                   return (
                     <td
                       key={d}
@@ -167,16 +214,22 @@ function WeekGrid({ rows, today }: { rows: StreakRow[]; today: string }) {
                         isLast && "rounded-r-pill",
                       )}
                     >
-                      <div
+                      <button
+                        type="button"
+                        disabled={!tappable}
+                        onClick={() => tappable && onCellClick(row, d)}
                         className={cn(
-                          "mx-auto flex h-5 w-5 items-center justify-center rounded-pill",
+                          "mx-auto flex h-5 w-5 items-center justify-center rounded-pill transition",
                           hit
                             ? "bg-green-100 text-green-700"
                             : "text-[var(--color-muted)]/40",
+                          tappable &&
+                            "cursor-pointer hover:ring-2 hover:ring-[var(--color-accent)]/40",
+                          !tappable && "cursor-default",
                         )}
                       >
                         {hit ? <Check size={10} /> : <X size={10} />}
-                      </div>
+                      </button>
                     </td>
                   );
                 })}
@@ -186,6 +239,357 @@ function WeekGrid({ rows, today }: { rows: StreakRow[]; today: string }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function pretty(d: string): string {
+  return new Date(d + "T00:00:00Z").toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function EditDayDialog({
+  row,
+  date,
+  onClose,
+  onChanged,
+}: {
+  row: StreakRow;
+  date: string;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  if (!row.tappable) return null;
+  const kind = row.tappable.kind;
+
+  if (kind === "social") {
+    return (
+      <SocialWeekDialog
+        row={row}
+        date={date}
+        onClose={onClose}
+        onChanged={onChanged}
+      />
+    );
+  }
+  if (kind === "deposit") {
+    return (
+      <DepositDayDialog
+        row={row}
+        date={date}
+        depositKind={row.tappable.depositKind}
+        onClose={onClose}
+        onChanged={onChanged}
+      />
+    );
+  }
+  return (
+    <DailyToggleDialog
+      row={row}
+      date={date}
+      onClose={onClose}
+      onChanged={onChanged}
+    />
+  );
+}
+
+function DailyToggleDialog({
+  row,
+  date,
+  onClose,
+  onChanged,
+}: {
+  row: StreakRow;
+  date: string;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isLogged = row.qualified.has(date);
+
+  async function toggle() {
+    const t = row.tappable;
+    if (!t || (t.kind !== "builtin" && t.kind !== "custom")) return;
+    setBusy(true);
+    setError(null);
+    let err;
+    if (isLogged) {
+      const rpc =
+        t.kind === "builtin"
+          ? supabase.rpc("unlog_habit", {
+              category_in: t.category,
+              date_in: date,
+            })
+          : supabase.rpc("unlog_custom_habit", {
+              habit_id_in: t.habitId,
+              date_in: date,
+            });
+      ({ error: err } = await rpc);
+    } else {
+      const rpc =
+        t.kind === "builtin"
+          ? supabase.rpc("log_habit", {
+              category_in: t.category,
+              // Sleep qualifies on hours, not minutes. The other built-ins
+              // qualify on minutes >= 30.
+              minutes_in: t.category === "sleep" ? null : 30,
+              value_in: t.category === "sleep" ? { hours: 7 } : null,
+              date_in: date,
+            })
+          : supabase.rpc("log_custom_habit", {
+              habit_id_in: t.habitId,
+              date_in: date,
+            });
+      ({ error: err } = await rpc);
+    }
+    setBusy(false);
+    if (err) return setError(err.message);
+    onChanged();
+  }
+
+  return (
+    <Dialog open onClose={onClose} title={row.label}>
+      <div className="space-y-3">
+        <p className="text-sm">
+          <span className="text-[var(--color-muted)]">{pretty(date)}</span>
+          <span className="block">
+            {isLogged ? "Currently logged." : "Not logged."}
+          </span>
+        </p>
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+          >
+            Cancel
+          </button>
+          <Button
+            onClick={toggle}
+            disabled={busy}
+            variant={isLogged ? "ghost" : "primary"}
+          >
+            {busy
+              ? "Saving…"
+              : isLogged
+                ? "Remove log"
+                : "Log this day"}
+          </Button>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
+function SocialWeekDialog({
+  row,
+  date,
+  onClose,
+  onChanged,
+}: {
+  row: StreakRow;
+  date: string;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isMarked = row.qualified.has(date);
+
+  async function toggle() {
+    setBusy(true);
+    setError(null);
+    const { error: rpcErr } = await supabase.rpc("set_social_for_date", {
+      date_in: date,
+      on_flag: !isMarked,
+    });
+    setBusy(false);
+    if (rpcErr) return setError(rpcErr.message);
+    onChanged();
+  }
+
+  return (
+    <Dialog open onClose={onClose} title={`Social — ${pretty(date)}`}>
+      <div className="space-y-3">
+        <p className="text-sm text-[var(--color-muted)]">
+          {isMarked
+            ? "Currently logged as a social day."
+            : "Not logged as social yet."}
+        </p>
+        {error && <p className="text-xs text-red-600">{error}</p>}
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+          >
+            Cancel
+          </button>
+          <Button
+            onClick={toggle}
+            disabled={busy}
+            variant={isMarked ? "ghost" : "primary"}
+          >
+            {busy
+              ? "Saving…"
+              : isMarked
+                ? "Remove this day"
+                : "Log this day"}
+          </Button>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
+type DepositRow = { id: string; amount: number };
+
+function DepositDayDialog({
+  row,
+  date,
+  depositKind,
+  onClose,
+  onChanged,
+}: {
+  row: StreakRow;
+  date: string;
+  depositKind: "savings" | "investment";
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [amount, setAmount] = useState("");
+  const [deposits, setDeposits] = useState<DepositRow[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
+
+  const tableName =
+    depositKind === "savings" ? "savings_deposits" : "investment_deposits";
+
+  async function loadDeposits() {
+    setLoadingList(true);
+    const { data, error: err } = await supabase
+      .from(tableName)
+      .select("id, amount")
+      .eq("date", date)
+      .order("created_at", { ascending: true });
+    setLoadingList(false);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setDeposits(
+      ((data ?? []) as { id: string; amount: number | string }[]).map((r) => ({
+        id: r.id,
+        amount: Number(r.amount),
+      })),
+    );
+  }
+
+  useEffect(() => {
+    loadDeposits();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, depositKind]);
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    const n = parseFloat(amount);
+    if (!Number.isFinite(n) || n <= 0) return;
+    setBusy(true);
+    setError(null);
+    const { error: rpcErr } = await supabase.rpc("log_deposit_for_date", {
+      kind_in: depositKind,
+      amount_in: n,
+      date_in: date,
+    });
+    setBusy(false);
+    if (rpcErr) return setError(rpcErr.message);
+    setAmount("");
+    await loadDeposits();
+    onChanged();
+  }
+
+  async function remove(id: string) {
+    setBusy(true);
+    setError(null);
+    const { error: rpcErr } = await supabase.rpc("delete_deposit", {
+      kind_in: depositKind,
+      id_in: id,
+    });
+    setBusy(false);
+    if (rpcErr) return setError(rpcErr.message);
+    await loadDeposits();
+    onChanged();
+  }
+
+  return (
+    <Dialog open onClose={onClose} title={`${row.label} — ${pretty(date)}`}>
+      <div className="space-y-3">
+        {loadingList ? (
+          <p className="text-xs text-[var(--color-muted)]">Loading…</p>
+        ) : deposits.length === 0 ? (
+          <p className="text-xs text-[var(--color-muted)]">
+            No deposits logged on this day yet.
+          </p>
+        ) : (
+          <ul className="divide-y divide-[var(--color-line)]">
+            {deposits.map((d) => (
+              <li
+                key={d.id}
+                className="flex items-center justify-between py-2 text-sm"
+              >
+                <span className="tabular-nums">
+                  {d.amount.toLocaleString()}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => remove(d.id)}
+                  disabled={busy}
+                  aria-label="Delete deposit"
+                  className="text-[var(--color-muted)] hover:text-red-600 disabled:opacity-50"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form onSubmit={add} className="flex gap-2">
+          <Input
+            type="number"
+            min={0}
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder={
+              depositKind === "savings" ? "Amount saved" : "Amount invested"
+            }
+            className="flex-1"
+          />
+          <Button type="submit" disabled={busy || !amount.trim()}>
+            {busy ? "…" : "Add"}
+          </Button>
+        </form>
+
+        {error && <p className="text-xs text-red-600">{error}</p>}
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-ink)]"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </Dialog>
   );
 }
 

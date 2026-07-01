@@ -98,8 +98,8 @@ export default function Friends({ userId }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Friends</h1>
-        <p className="text-sm text-[var(--color-muted)]">
+        <h1 className="page-title">Friends</h1>
+        <p className="page-sub">
           Everything in Bloomgarden is friends-only. Add someone to start.
         </p>
       </div>

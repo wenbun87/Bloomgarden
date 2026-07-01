@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Coins, Lock } from "lucide-react";
 import { WidgetCard } from "@/components/WidgetCard";
 import { Button } from "@/components/ui/Button";
+import { PixelPlant } from "@/components/PixelPlant";
+import { plantKindFor } from "@/lib/plantKinds";
 import { supabase } from "@/lib/supabase";
 import type { PlantSpecies } from "@/hooks/useGarden";
 import { cn } from "@/lib/utils";
@@ -243,7 +245,9 @@ function SpeciesTile({
   return (
     <li className="flex flex-col gap-1 rounded-card border border-[var(--color-border)] bg-white/70 p-2">
       <div className="flex items-start gap-2">
-        <span className="text-xl leading-none">{species.sprite_emoji}</span>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white">
+          <PixelPlant kind={plantKindFor(species.slug)} size={28} resolution={4} />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-semibold">{species.name}</p>
           <p className="truncate text-[10px] capitalize text-[var(--color-muted)]">

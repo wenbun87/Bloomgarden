@@ -8,10 +8,12 @@ import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import Shed from "@/pages/Shed";
 import Garden from "@/pages/Garden";
+import Pruning from "@/pages/Pruning";
 import Leaderboard from "@/pages/Leaderboard";
 import Health from "@/pages/Health";
 import Wealth from "@/pages/Wealth";
 import Friends from "@/pages/Friends";
+import Calendar from "@/pages/Calendar";
 import Profile from "@/pages/Profile";
 import SettingsPage from "@/pages/Settings";
 
@@ -54,6 +56,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="shed" element={<Shed userId={session.user.id} />} />
         <Route path="garden" element={<Garden userId={session.user.id} />} />
+        <Route path="pruning" element={<Pruning userId={session.user.id} />} />
         <Route
           path="leaderboard"
           element={<Leaderboard userId={session.user.id} />}
@@ -66,6 +69,10 @@ export default function App() {
         <Route
           path="friends"
           element={<Friends userId={session.user.id} />}
+        />
+        <Route
+          path="calendar"
+          element={<Calendar userId={session.user.id} />}
         />
         <Route
           path="settings"

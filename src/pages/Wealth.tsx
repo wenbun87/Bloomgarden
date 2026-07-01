@@ -23,8 +23,8 @@ export default function Wealth({ userId }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Orchard</h1>
-        <p className="text-sm text-[var(--color-muted)]">
+        <h1 className="page-title">Orchard</h1>
+        <p className="page-sub">
           Your net worth over time, a daily market forecast, and a shared
           AI-tended portfolio everyone watches together.
         </p>

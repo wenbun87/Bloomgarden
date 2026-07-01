@@ -1,29 +1,52 @@
 /* ─────────────────────────────────────────────────────────────────
-   tokens.css — THE DESIGN SWAP TARGET
-   Every visual choice flows from here. Saturday's design pass
-   edits this file (and maybe adds one more) — nothing else.
-   Palette below is deliberately placeholder pastel. Don't polish.
+   tokens.css — Direction 2 (Bold · Cozy Console)
+   Chunky 3D-feel UI with pixel plants and a seasonal palette.
+   Ported from claude-design d2-bold spec (currently spring).
+   Type pair: Nunito (body) + Fraunces (display, weight 600).
    ───────────────────────────────────────────────────────────────── */
 
 :root {
   /* Surface + structure */
-  --color-bg: #faf7f5;
-  --color-surface: rgba(255, 255, 255, 0.72);
-  --color-border: rgba(20, 20, 40, 0.06);
-  --color-ink: #1c1b29;
-  --color-muted: #6b6a7b;
+  --color-bg:         #f4efe5;
+  --color-bg-elev:    #faf5ea;
+  --color-paper:      #faf5ea;
+  --color-surface:    #faf5ea;
+  --color-cream:      #f6ecd1;
+  --color-border:     rgba(40,30,20,0.08);
+  --color-line:       rgba(40,30,20,0.08);
+  --color-line-soft:  rgba(40,30,20,0.04);
+  --color-ink:        #232022;
+  --color-muted:      #857a74;
+  --color-mute:       #9c938a;
 
-  /* Accent (placeholder — Saturday replaces this) */
-  --color-accent: #e9a5b5;
-  --color-accent-soft: #fce4ea;
+  /* Garden palette — spring */
+  --color-grass:       #6f8a4a;
+  --color-grass-deep:  #4d6735;
+  --color-grass-soft:  #e0e6cf;
+  --color-soil:        #6b4a2e;
+  --color-soil-dark:   #4b2f1a;
+  --color-sun:         #f4c152;
+  --color-sky:         #cfe1e4;
+
+  /* Accent — terracotta carries CTAs, coins, avatars */
+  --color-accent:      #c56b43;
+  --color-accent-soft: #f0d9c8;
 
   /* Shape */
-  --radius-card: 18px;
+  --radius-card: 14px;
+  --radius-sm:   10px;
+  --radius-lg:   20px;
   --radius-pill: 999px;
-  --shadow-card: 0 1px 2px rgba(20, 20, 40, 0.04), 0 8px 24px rgba(20, 20, 40, 0.04);
-  --blur-card: 8px;
+  --shadow-card: 0 1px 0 rgba(0,0,0,0.03), 0 4px 16px rgba(60,40,20,0.04);
+  --shadow-md:   0 4px 14px rgba(60,45,20,0.06);
+  --shadow-lg:   0 20px 60px rgba(40,30,20,0.12);
 
-  /* Type */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-sans);
+  /* Chunky 3D inset bottom shadow — defining D2 detail.
+     Use on buttons, brand mark, active nav, deposit chips. */
+  --chunk-shadow:      inset 0 -2px 0 rgba(0,0,0,0.15);
+  --chunk-shadow-deep: inset 0 -3px 0 rgba(0,0,0,0.18);
+
+  /* Type — Nunito body, Fraunces display weight 600 */
+  --font-sans:    "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
 }

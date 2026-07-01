@@ -28,11 +28,11 @@ export default function Health({ userId }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Kitchen</h1>
-        <p className="text-sm text-[var(--color-muted)]">
+        <h1 className="page-title">Kitchen</h1>
+        <p className="page-sub">
           Everything you need at your fingertips to eat well — flag processed
-          foods, microplastics, and questionable ingredients before they land on
-          your plate.
+          foods, microplastics, and questionable ingredients before they land
+          on your plate.
         </p>
       </div>
 

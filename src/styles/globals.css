@@ -9,12 +9,55 @@ html, body, #root {
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 20% -10%, #fde8ee 0%, transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, #e6ecff 0%, transparent 55%),
-    var(--color-bg);
+  background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Display utility — Fraunces weight 600, tighter tracking. D2 spec. */
+.font-display,
+.display,
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Page title — chunky display, used in page headers. */
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 4vw, 38px);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--color-ink);
+}
+.page-sub {
+  color: var(--color-muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* Mobile sidebar drawer slide-in. */
+@keyframes drawerIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Prevent iOS Safari from auto-zooming when focusing a form field.
+   The trigger is any input/textarea/select with computed font-size < 16px;
+   bumping it on small screens keeps tap-to-edit at the user's existing
+   zoom level. !important is needed because Tailwind text-* utilities
+   otherwise win the cascade. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
