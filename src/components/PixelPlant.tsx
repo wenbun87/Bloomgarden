@@ -445,6 +445,13 @@ const grids8: Record<string, string[]> = {
   ],
 };
 
+// Fixed sprout color for the growing-stage placeholder. Deliberately NOT
+// looked up from the per-kind palette — several kinds (wisteria, maple, …)
+// have no "G" entry since their ready sprite never needs green, which
+// silently blanked the growing sprite for those kinds. A grid that's shared
+// across all kinds shouldn't depend on what any one kind's palette contains.
+const GROWING_COLOR = "#6a9a3a";
+
 export function PixelPlant({
   kind,
   size = 64,
@@ -452,7 +459,8 @@ export function PixelPlant({
   resolution = 8,
 }: Props) {
   const grids = resolution === 4 ? grids4 : grids8;
-  const grid = stage === "growing" ? grids._growing : grids[kind] ?? grids.strawberry;
+  const growing = stage === "growing";
+  const grid = growing ? grids._growing : grids[kind] ?? grids.strawberry;
   const palette = palettes[kind] ?? palettes.strawberry;
   const dim = resolution === 4 ? 4 : 8;
   const cell = size / dim;
@@ -468,7 +476,9 @@ export function PixelPlant({
     >
       {grid.map((row, r) =>
         [...row].map((ch, c) => {
-          if (ch === "." || !palette[ch]) return null;
+          if (ch === ".") return null;
+          const fill = growing ? GROWING_COLOR : palette[ch];
+          if (!fill) return null;
           return (
             <rect
               key={`${r}-${c}`}
@@ -476,7 +486,7 @@ export function PixelPlant({
               y={r * cell}
               width={cell + 0.5}
               height={cell + 0.5}
-              fill={palette[ch]}
+              fill={fill}
             />
           );
         }),
